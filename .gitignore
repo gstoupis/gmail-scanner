@@ -1,0 +1,12 @@
+### Project Specific ###
+src/main/resources/credentials.json
+tokens/
+
+### Maven ###
+target/
+
+### IntelliJ IDEA ###
+.idea/
+
+### Mac OS ###
+.DS_Store
