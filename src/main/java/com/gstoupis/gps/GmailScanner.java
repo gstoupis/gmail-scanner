@@ -1,45 +1,36 @@
 package com.gstoupis.gps;
 
+import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.Event;
 import com.google.api.services.gmail.Gmail;
-import com.google.api.services.gmail.model.ListMessagesResponse;
-import com.google.api.services.gmail.model.Message;
-import com.gstoupis.gps.gmail.GmailServiceProvider;
-import com.gstoupis.gps.model.Prescription;
-import com.gstoupis.gps.parser.HtmlParser;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
+import com.gstoupis.gps.google.GoogleServiceType;
+import com.gstoupis.gps.google.GoogleServiceFactory;
+import com.gstoupis.gps.service.PrescriptionService;
+import com.gstoupis.gps.service.model.Prescription;
 import java.util.List;
 
+/**
+ * TODO:
+ * 1. Add prescription.isClaimed() check
+ * 2. Add logback
+ * 3. Add unit tests
+ * 4. Decide where this will run & how frequently
+ */
 public class GmailScanner {
 
+  public static void main(String... args) throws Exception {
 
-    public static void main(String... args) throws IOException, GeneralSecurityException {
+    Gmail gmail = (Gmail) GoogleServiceFactory.getService(GoogleServiceType.GMAIL);
+    Calendar calendar = (Calendar) GoogleServiceFactory.getService(GoogleServiceType.CALENDAR);
 
-        Gmail service = GmailServiceProvider.getService();
+    PrescriptionService prescriptionService = new PrescriptionService(gmail, calendar);
+    List<Prescription> prescriptions = prescriptionService.getActivePrescriptions();
+    System.out.println("Active prescriptions: " + prescriptions);
 
-        //TODO: parameterize the below
-        String user = "me";
-        String query = "from:Hs-no.reply@e-prescription.gr AND subject:Έκδοση";
-        Long maxResults = 100L;
-
-        // Read messages
-        ListMessagesResponse listMessagesResponse = service.users().messages().list(user)
-                .setQ(query)
-                .setMaxResults(maxResults)
-                .execute();
-        List<Message> messages = listMessagesResponse.getMessages();
-        System.out.println("Got " + messages.size() + " messages");
-
-        HtmlParser htmlParser = new HtmlParser();
-        for (Message message : messages) {
-            Message detailedMessage = service.users().messages().get(user, message.getId()).execute();
-            byte[] data = detailedMessage.getPayload().getBody().decodeData();
-            String dataString = new String(data, StandardCharsets.UTF_8);
-            Prescription prescription = htmlParser.parsePrescriptionEmailHtml(dataString);
-            System.out.println(prescription + " - isValid:" + prescription.isValid());
-        }
-
+    List<Event> events = prescriptionService.createEventsForPrescriptions(prescriptions);
+    for (Event event : events) {
+      System.out.println("Creating event: " + event.getSummary() + "(" + event.getStart().getDate() + ")");
+//      calendar.events().insert("primary", event).execute();
     }
+  }
 }
