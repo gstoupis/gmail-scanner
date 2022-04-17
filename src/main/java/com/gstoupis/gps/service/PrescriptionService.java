@@ -7,22 +7,29 @@ import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
+import com.gstoupis.gps.google.GoogleServiceFactory;
+import com.gstoupis.gps.google.GoogleServiceType;
 import com.gstoupis.gps.service.model.Prescription;
 import com.gstoupis.gps.service.parser.HtmlParser;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PrescriptionService {
 
-  private Gmail gmail;
-  private Calendar calendar;
+  private static final Logger LOG = LoggerFactory.getLogger(PrescriptionService.class);
 
-  public PrescriptionService(Gmail gmail, Calendar calendar) {
-    this.gmail = gmail;
-    this.calendar = calendar;
+  private final Gmail gmail;
+  private final Calendar calendar;
+
+  public PrescriptionService() throws IOException, GeneralSecurityException {
+    this.gmail = (Gmail) GoogleServiceFactory.getService(GoogleServiceType.GMAIL);
+    this.calendar = (Calendar) GoogleServiceFactory.getService(GoogleServiceType.CALENDAR);
   }
 
   public List<Prescription> getActivePrescriptions() throws IOException {
@@ -35,7 +42,7 @@ public class PrescriptionService {
     // Read messages
     ListMessagesResponse listMessagesResponse = gmail.users().messages().list(user).setQ(query).setMaxResults(maxResults).execute();
     List<Message> messages = listMessagesResponse.getMessages();
-    System.out.println("Got " + messages.size() + " messages");
+    LOG.info("Got {} prescription emails", messages.size());
 
     HtmlParser htmlParser = new HtmlParser();
     List<Prescription> prescriptions = new ArrayList<>();
@@ -55,13 +62,17 @@ public class PrescriptionService {
     return prescriptions;
   }
 
-  public List<Event> createEventsForPrescriptions(List<Prescription> prescriptions) {
+  public void createEventsForPrescriptions(List<Prescription> prescriptions) {
 
     List<Event> events = new ArrayList<>();
 
     prescriptions.forEach(prescription -> events.add(this.translatePrescriptionToEvent(prescription)));
 
-    return events;
+    for (Event event : events) {
+      LOG.info("Creating event: {} ({})", event.getSummary(), event.getStart().getDate());
+//      calendar.events().insert("primary", event).execute();
+    }
+
   }
 
   private Event translatePrescriptionToEvent(Prescription prescription) {

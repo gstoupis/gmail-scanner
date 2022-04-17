@@ -16,7 +16,7 @@ public record Prescription(String id, LocalDate from, LocalDate to) {
 
   public boolean isUnclaimed() {
     //TODO: implement logic
-    return false;
+    return true;
   }
 
 }
