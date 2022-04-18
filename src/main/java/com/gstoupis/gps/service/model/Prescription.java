@@ -14,9 +14,4 @@ public record Prescription(String id, LocalDate from, LocalDate to) {
     return to.isAfter(LocalDate.now());
   }
 
-  public boolean isUnclaimed() {
-    //TODO: implement logic
-    return true;
-  }
-
 }

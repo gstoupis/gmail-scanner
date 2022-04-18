@@ -16,9 +16,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 public class PrescriptionService {
 
@@ -36,7 +39,7 @@ public class PrescriptionService {
 
     //TODO: parameterize the below
     String user = "me";
-    String query = "from:Hs-no.reply@e-prescription.gr AND subject:Έκδοση";
+    String query = "from:Hs-no.reply@e-prescription.gr AND (subject:Έκδοση OR subject:Επιτυχής)";
     Long maxResults = 100L;
 
     // Read messages
@@ -46,15 +49,23 @@ public class PrescriptionService {
 
     HtmlParser htmlParser = new HtmlParser();
     List<Prescription> prescriptions = new ArrayList<>();
+    Set<String> ignoreList = new HashSet<>();
     for (Message message : messages) {
       Message detailedMessage = gmail.users().messages().get(user, message.getId()).execute();
+
+      //Executed - need to ignore it
+      String claimedPrescriptionId = htmlParser.parseClaimedPrescriptionId(detailedMessage.getSnippet());
+      if (StringUtils.hasText(claimedPrescriptionId)) {
+        ignoreList.add(claimedPrescriptionId);
+        continue;
+      }
+
       byte[] data = detailedMessage.getPayload().getBody().decodeData();
       String dataString = new String(data, StandardCharsets.UTF_8);
       Prescription prescription = htmlParser.parsePrescriptionEmailHtml(dataString);
 
       //Non-expired prescriptions only
-      //TODO: Add check for successful prescription claim - do not include already claimed prescriptions
-      if (prescription.isValid() && prescription.isActive() && prescription.isUnclaimed()) {
+      if (!ignoreList.contains(prescription.id()) && prescription.isValid() && prescription.isActive()) {
         prescriptions.add(prescription);
       }
     }

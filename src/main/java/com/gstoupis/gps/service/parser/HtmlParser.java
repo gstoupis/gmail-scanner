@@ -13,6 +13,7 @@ public class HtmlParser {
   private static final String FROM_DATE_PRE_TEXT = "ΑΠΟ:";
   private static final String TO_DATE_PRE_TEXT = "ΕΩΣ:";
   private static final String ID_PRETEXT = "Η συνταγή με barcode";
+  public static final String CLAIMED_TEXT = "εκτελέστηκε";
 
   private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -48,5 +49,10 @@ public class HtmlParser {
     LocalDate toDate = LocalDate.parse(to.get(), dtf);
 
     return new Prescription(id.get(), fromDate, toDate);
+  }
+
+  public String parseClaimedPrescriptionId(String snippet) {
+    return snippet.startsWith(ID_PRETEXT) && snippet.contains(CLAIMED_TEXT) ?
+        snippet.substring(snippet.indexOf(ID_PRETEXT) + ID_PRETEXT.length(), snippet.indexOf(CLAIMED_TEXT)).trim() : null;
   }
 }
