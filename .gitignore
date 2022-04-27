@@ -1,5 +1,5 @@
 ### Project Specific ###
-src/main/resources/credentials.json
+src/main/resources/*-credentials.json
 tokens/
 
 ### Maven ###

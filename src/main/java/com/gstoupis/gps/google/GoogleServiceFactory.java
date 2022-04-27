@@ -15,7 +15,7 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
-import java.io.FileNotFoundException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,7 +38,9 @@ public class GoogleServiceFactory {
    */
   private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-  private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+  private GoogleServiceFactory() {
+
+  }
 
   /**
    * Global instance of the scopes required by this quickstart. If modifying these scopes, delete your previously saved tokens/ folder.
@@ -82,16 +84,13 @@ public class GoogleServiceFactory {
    *
    * @param httpTransport The network HTTP Transport.
    * @return An authorized Credential object.
-   * @throws IOException If the credentials.json file cannot be found.
+   * @throws IOException If the google-credentials.json file cannot be found.
    */
   private static Credential getCredentials(final NetHttpTransport httpTransport) throws IOException {
+
     // Load client secrets.
-    InputStream in = GoogleServiceFactory.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-    if (in == null) {
-      throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
-    }
-    GoogleClientSecrets clientSecrets =
-        GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+    InputStream in = new ByteArrayInputStream(System.getenv("GOOGLE_WEB_CREDENTIALS").getBytes());
+    GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
     // Build flow and trigger user authorization request.
     GoogleAuthorizationCodeFlow flow =
@@ -99,7 +98,7 @@ public class GoogleServiceFactory {
             .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
             .setAccessType("offline")
             .build();
-    LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+    LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(52490).build();
     return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
   }
 }
