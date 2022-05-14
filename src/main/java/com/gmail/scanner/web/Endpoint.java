@@ -1,5 +1,6 @@
 package com.gmail.scanner.web;
 
+import com.gmail.scanner.google.GoogleServiceProvider;
 import com.gmail.scanner.security.OAuth2AuthorizedClientProvider;
 import com.gmail.scanner.service.PrescriptionService;
 import com.gmail.scanner.service.model.Prescription;
@@ -21,9 +22,11 @@ public class Endpoint {
 
   private static final Logger LOG = LoggerFactory.getLogger(Endpoint.class);
 
+  private final GoogleServiceProvider googleServiceProvider;
   private final OAuth2AuthorizedClientProvider oauth2AuthorizedClientProvider;
 
-  public Endpoint(OAuth2AuthorizedClientProvider oauth2AuthorizedClientProvider) {
+  public Endpoint(GoogleServiceProvider googleServiceProvider, OAuth2AuthorizedClientProvider oauth2AuthorizedClientProvider) {
+    this.googleServiceProvider = googleServiceProvider;
     this.oauth2AuthorizedClientProvider = oauth2AuthorizedClientProvider;
   }
 
@@ -35,7 +38,7 @@ public class Endpoint {
   @GetMapping("/scan")
   public String scan() throws IOException, GeneralSecurityException {
 
-    PrescriptionService prescriptionService = new PrescriptionService(oauth2AuthorizedClientProvider.getClient());
+    PrescriptionService prescriptionService = new PrescriptionService(googleServiceProvider, oauth2AuthorizedClientProvider);
 
     List<Prescription> prescriptions = prescriptionService.getActivePrescriptions();
     LOG.info("Active prescriptions: {}", prescriptions);

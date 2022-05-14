@@ -1,5 +1,10 @@
 package com.gmail.scanner.service;
 
+import com.gmail.scanner.google.GoogleServiceProvider;
+import com.gmail.scanner.google.GoogleServiceType;
+import com.gmail.scanner.security.OAuth2AuthorizedClientProvider;
+import com.gmail.scanner.service.model.Prescription;
+import com.gmail.scanner.service.parser.HtmlParser;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
@@ -7,10 +12,6 @@ import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
-import com.gmail.scanner.google.GoogleServiceFactory;
-import com.gmail.scanner.google.GoogleServiceType;
-import com.gmail.scanner.service.model.Prescription;
-import com.gmail.scanner.service.parser.HtmlParser;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.util.StringUtils;
 
 public class PrescriptionService {
@@ -31,9 +31,9 @@ public class PrescriptionService {
   private final Gmail gmail;
   private final Calendar calendar;
 
-  public PrescriptionService(OAuth2AuthorizedClient client) throws IOException, GeneralSecurityException {
-    this.gmail = (Gmail) GoogleServiceFactory.getService(GoogleServiceType.GMAIL, client);
-    this.calendar = (Calendar) GoogleServiceFactory.getService(GoogleServiceType.CALENDAR, client);
+  public PrescriptionService(GoogleServiceProvider googleServiceProvider, OAuth2AuthorizedClientProvider clientProvider) throws IOException, GeneralSecurityException {
+    this.gmail = (Gmail) googleServiceProvider.getService(GoogleServiceType.GMAIL, clientProvider.getClient());
+    this.calendar = (Calendar) googleServiceProvider.getService(GoogleServiceType.CALENDAR, clientProvider.getClient());
   }
 
   public List<Prescription> getActivePrescriptions() throws IOException {
