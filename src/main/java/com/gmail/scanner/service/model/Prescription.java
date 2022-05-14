@@ -1,4 +1,4 @@
-package com.gstoupis.gps.service.model;
+package com.gmail.scanner.service.model;
 
 import java.time.LocalDate;
 import java.util.Objects;

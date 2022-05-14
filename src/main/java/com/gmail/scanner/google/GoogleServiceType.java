@@ -1,4 +1,4 @@
-package com.gstoupis.gps.google;
+package com.gmail.scanner.google;
 
 public enum GoogleServiceType {
   GMAIL,

@@ -1,6 +1,6 @@
-package com.gstoupis.gps.service.parser;
+package com.gmail.scanner.service.parser;
 
-import com.gstoupis.gps.service.model.Prescription;
+import com.gmail.scanner.service.model.Prescription;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;

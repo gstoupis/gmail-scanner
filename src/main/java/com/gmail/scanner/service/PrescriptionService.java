@@ -1,4 +1,4 @@
-package com.gstoupis.gps.service;
+package com.gmail.scanner.service;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
@@ -7,10 +7,10 @@ import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
-import com.gstoupis.gps.google.GoogleServiceFactory;
-import com.gstoupis.gps.google.GoogleServiceType;
-import com.gstoupis.gps.service.model.Prescription;
-import com.gstoupis.gps.service.parser.HtmlParser;
+import com.gmail.scanner.google.GoogleServiceFactory;
+import com.gmail.scanner.google.GoogleServiceType;
+import com.gmail.scanner.service.model.Prescription;
+import com.gmail.scanner.service.parser.HtmlParser;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.util.StringUtils;
 
 public class PrescriptionService {
@@ -30,9 +31,9 @@ public class PrescriptionService {
   private final Gmail gmail;
   private final Calendar calendar;
 
-  public PrescriptionService() throws IOException, GeneralSecurityException {
-    this.gmail = (Gmail) GoogleServiceFactory.getService(GoogleServiceType.GMAIL);
-    this.calendar = (Calendar) GoogleServiceFactory.getService(GoogleServiceType.CALENDAR);
+  public PrescriptionService(OAuth2AuthorizedClient client) throws IOException, GeneralSecurityException {
+    this.gmail = (Gmail) GoogleServiceFactory.getService(GoogleServiceType.GMAIL, client);
+    this.calendar = (Calendar) GoogleServiceFactory.getService(GoogleServiceType.CALENDAR, client);
   }
 
   public List<Prescription> getActivePrescriptions() throws IOException {
